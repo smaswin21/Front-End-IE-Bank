@@ -1,0 +1,27 @@
+# dockerfile_simple
+FROM node:lts-alpine
+
+ARG MODE
+
+# Install simple HTTP server to serve static content
+RUN npm install -g http-server
+
+WORKDIR /app
+
+# Copy both `package.json` and `package-lock.json` if available
+COPY package*.json ./
+
+# Install project dependencies
+RUN npm install
+
+# Copy project files and folders to the working directory (i.e., 'app' folder)
+COPY . .
+
+# Build the application
+RUN npm run build -- --mode ${MODE}
+
+# Expose the port used by the HTTP server
+EXPOSE 8080
+
+# Serve the application using the HTTP server
+CMD ["http-server", "dist"]

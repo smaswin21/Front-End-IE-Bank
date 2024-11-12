@@ -1,0 +1,25 @@
+# Build stage - Using a different port for this one as the simple one has taken 8080 already
+FROM node:lts-alpine AS build-stage
+
+ARG MODE
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build -- --mode ${MODE}
+
+# Run stage
+FROM nginx:stable-alpine AS run-stage
+
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+
+# Expose port 9090
+EXPOSE 9090
+
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
