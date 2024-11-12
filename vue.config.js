@@ -6,5 +6,5 @@ module.exports = defineConfig({
   },
   outputDir: process.env.NODE_ENV === 'development' ? 'dist-dev' :
              process.env.NODE_ENV === 'uat' ? 'dist-uat' :
-             'dist', // fallback to dist for production
+             'dist', 
 })
