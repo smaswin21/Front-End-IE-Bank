@@ -1,46 +1,332 @@
 <template>
   <div class="homepage">
-    <div class="content">
-      <h1>Welcome to IE Bank</h1>
-      <p>Your trusted banking partner</p>
-      <div class="buttons">
-        <router-link to="/login" class="btn btn-primary">Login</router-link>
-        <router-link to="/register" class="btn btn-outline-primary">Register</router-link>
+    <!-- Top Header -->
+    <header class="header">
+      <div class="logo">
+        <h2>IE Bank</h2>
+      </div>
+      <nav class="nav">
+        <template v-if="isLoggedIn">
+          <span class="nav-link">{{ username }}</span>
+          <button @click="logout" class="btn btn-danger">Logout</button>
+        </template>
+        <template v-else>
+          <router-link to="/login" class="nav-link">Login</router-link>
+          <router-link to="/register" class="nav-link">Register</router-link>
+        </template>
+      </nav>
+    </header>
+
+    <!-- Cookie Popup -->
+    <div class="cookie-popup" v-if="showCookiePopup">
+      <p>We use cookies to ensure you get the best experience on our website. <a href="/" class="cookie-link">Learn more</a>.</p>
+      <button @click="acceptCookies" class="btn btn-primary">Accept</button>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+      <div class="hero-content">
+        <h1>Welcome to IE Bank</h1>
+        <p>Your trusted partner for secure and efficient banking solutions.</p>
+        <div class="buttons">
+          <router-link to="/login" class="btn btn-primary">Login</router-link>
+          <router-link to="/register" class="btn btn-secondary">Register</router-link>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="../assets/colleagues_office.png" alt="Colleagues in Office" />
       </div>
     </div>
+
+    <!-- Dashboard Section -->
+    <section class="dashboard">
+      <div class="dashboard-content">
+        <h2>Manage Your Accounts</h2>
+        <p>Access your account details, view transaction history, and manage your finances with ease.</p>
+        <div class="dashboard-buttons">
+          <router-link to="/dashboard" class="btn btn-primary">Go to Dashboard</router-link>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+      <div class="feature">
+        <h3>Advanced Security</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel urna nec lacus facilisis efficitur.</p>
+      </div>
+      <div class="feature">
+        <h3>24/7 Customer Support</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel urna nec lacus facilisis efficitur.</p>
+      </div>
+      <div class="feature">
+        <h3>Seamless Transfers</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel urna nec lacus facilisis efficitur.</p>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about">
+      <h2>About IE Bank</h2>
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo lorem id metus hendrerit, non facilisis purus aliquet.
+        Proin eget justo sit amet lectus fermentum faucibus at sed eros.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo lorem id metus hendrerit, non facilisis purus aliquet.
+      </p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>&copy; 2024 IE Bank. All rights reserved.</p>
+    </footer>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "HomePage",
+  data() {
+    return {
+      showCookiePopup: true,
+      username: "", // Stores username when logged in
+      isLoggedIn: false, // Tracks if user is logged in
+    };
+  },
+  methods: {
+    async fetchUserStatus() {
+      try {
+        console.log("Fetching user status...");
+        const response = await fetch(`${process.env.VUE_APP_ROOT_URL}/dashboard`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("User status fetched successfully:", data);
+          this.isLoggedIn = true; // User is logged in
+          this.username = data.username; // Fetch username from response
+        } else {
+          console.log("User not logged in or session expired.");
+          this.isLoggedIn = false; // User is not logged in
+          this.username = "";
+        }
+      } catch (error) {
+        console.error("Error fetching user status:", error);
+        this.isLoggedIn = false;
+        this.username = "";
+      }
+    },
+    async logout() {
+      try {
+        await axios.get(`${process.env.VUE_APP_ROOT_URL}/logout`, {
+          withCredentials: true,
+        });
+        alert("You have been logged out.");
+        this.$router.push("/");
+      } catch (error) {
+        console.error("Logout failed:", error);
+        alert("An error occurred while logging out. Please try again.");
+      }
+    },
+    acceptCookies() {
+      this.showCookiePopup = false;
+    },
+  },
+  created() {
+    this.fetchUserStatus(); // Fetch login status on component creation
+  },
 };
 </script>
 
 <style scoped>
-.homepage {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: #f0f2f5;
-  text-align: center;
+/* General Reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
 }
 
-.content h1 {
-  font-size: 3rem;
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #004080;
+  color: white;
+}
+
+.logo h2 {
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+/* Hero Section */
+.hero {
+  display: flex;
+  align-items: center;
+  padding: 40px;
+  background-color: #fff;
+}
+
+.hero-content {
+  flex: 1;
+  padding-right: 20px;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  color: #004080;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.hero-image {
+  text-align: center; 
+  padding: 20px;
+}
+
+.hero-image img {
+  max-width: 100%;
+  max-height: 450px;
+  display: block;
+  margin: 0 auto; 
+}
+
+
+/* Buttons */
+.buttons .btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.btn-primary {
+  background-color: #004080;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #fff;
+  color: #004080;
+  border: 2px solid #004080;
+}
+
+/* Features Section */
+.features {
+  display: flex;
+  justify-content: space-around;
+  background-color: #fff;
+  padding: 80px 60px;
+}
+
+.feature h3 {
+  color: #004080;
   margin-bottom: 10px;
 }
 
-.content p {
+/* About Section */
+.about {
+  padding: 40px;
+  text-align: center;
+}
+
+.about h2 {
+  font-size: 2rem;
+  color: #004080;
+}
+
+.about p {
+  padding-left: 300px;
+  padding-right: 300px;
+  margin-bottom: 20px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #004080;
+  color: white;
+}
+
+/* Cookie Popup */
+.cookie-popup {
+  position: fixed;
+  bottom: 30px;
+  left: 400px;
+  background: #fff;
+  padding: 40px;
+  box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+
+.cookie-popup p {
+  margin: 0 0 10px 0;
+}
+
+.cookie-link {
+  color: #004080;
+  text-decoration: underline;
+}
+
+/* Dashboard Section */
+.dashboard {
+  background-color: #f0f2f5;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.dashboard-content h2 {
+  font-size: 2rem;
+  color: #004080;
+  margin-bottom: 10px;
+}
+
+.dashboard-content p {
   font-size: 1.2rem;
   color: #555;
   margin-bottom: 20px;
 }
 
-.buttons .btn {
-  margin: 10px;
+.dashboard-buttons .btn {
   padding: 10px 20px;
   font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dashboard-buttons .btn-primary {
+  background-color: #004080;
+  color: white;
+}
+
+.dashboard-buttons .btn-primary:hover {
+  background-color: #003366;
 }
 </style>

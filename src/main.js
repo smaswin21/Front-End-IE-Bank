@@ -5,6 +5,7 @@ import router from './router'
 import 'bootstrap/dist/css/bootstrap.css'
 import BootstrapVue from "bootstrap-vue";
 import store from './store';
+import "@/services/axios";
 
 
 Vue.config.productionTip = false

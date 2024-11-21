@@ -41,11 +41,14 @@
         </b-form-group>
         <b-button type="submit" variant="primary" block>Register</b-button>
       </b-form>
+      <b-button to="/" variant="link" class="back-button">Back</b-button>
     </div>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
@@ -57,8 +60,30 @@ export default {
     };
   },
   methods: {
-    onSubmit() {
-      // Perform registration logic
+    async onSubmit() {
+      if (this.password !== this.confirmPassword) {
+        this.error = "Passwords do not match.";
+        return;
+      }
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_ROOT_URL}/register`,
+          {
+            username: this.username,
+            email: this.email,
+            password: this.password,
+            confirm_password: this.confirmPassword,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );alert("Registration successful!");
+        this.$router.push("/login");
+      } catch (error) {
+          this.error = error.response?.data?.error || "Registration failed. Please try again.";
+      }
     },
   },
 };
@@ -85,5 +110,18 @@ export default {
 h2 {
   text-align: center;
   margin-bottom: 20px;
+}
+
+.back-button {
+  display: block;
+  margin: 10px auto 0;
+  color: #007bff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.back-button:hover {
+  color: #0056b3;
+  text-decoration: underline;
 }
 </style>

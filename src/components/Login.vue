@@ -23,11 +23,14 @@
         </b-form-group>
         <b-button type="submit" variant="primary" block>Login</b-button>
       </b-form>
+      <b-button @click="goBack" variant="link" class="back-button">Back</b-button>
     </div>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
@@ -37,8 +40,38 @@ export default {
     };
   },
   methods: {
-    onSubmit() {
-      // Perform login logic
+    async onSubmit() {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_ROOT_URL}/login`,
+          {
+            username: this.username,
+            password: this.password,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+
+        // Redirect based on server response
+        if (response.data.redirect === "admin") {
+          this.$router.push("/admin");
+        } else if (response.data.redirect === "dashboard") {
+          this.$router.push("/");
+        } else {
+          this.error = "Unexpected response from the server.";
+        }
+      } catch (error) {
+        console.error("Login Error:", error);
+        this.error =
+          error.response?.data?.error || "Unexpected response from the server. Please try again.";
+      }
+    },
+    goBack() {
+      this.$router.push('/'); // Navigate back to the previous page
     },
   },
 };
@@ -65,5 +98,18 @@ export default {
 h2 {
   text-align: center;
   margin-bottom: 20px;
+}
+
+.back-button {
+  display: block;
+  margin: 10px auto 0;
+  color: #007bff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.back-button:hover {
+  color: #0056b3;
+  text-decoration: underline;
 }
 </style>

@@ -2,6 +2,7 @@
   <div class="transfer-money">
     <h2>Transfer Money</h2>
     <b-alert v-if="showMessage" variant="success" show>{{ message }}</b-alert>
+    <b-alert v-if="errorMessage" variant="danger" show>{{ errorMessage }}</b-alert>
     <b-form @submit.prevent="onTransfer">
       <b-form-group label="From Account:" label-for="from-account">
         <b-form-select
@@ -48,15 +49,46 @@ export default {
       amount: "",
       accounts: [],
       showMessage: false,
+      errorMessage: "",
       message: "",
     };
   },
   methods: {
-    onTransfer() {
-      // Call the transfer API
+    async onTransfer() {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_ROOT_URL}/transfer`,
+          {
+            from_account_id: this.fromAccountId,
+            to_account_number: this.toAccountNumber,
+            amount: parseFloat(this.amount),
+          },
+          { withCredentials: true }
+        );
+        this.message = response.data.message || "Transfer successful!";
+        this.showMessage = true;
+        this.errorMessage = "";
+        this.fromAccountId = "";
+        this.toAccountNumber = "";
+        this.amount = "";
+      } catch (error) {
+        this.errorMessage =
+          error.response?.data?.error || "An error occurred during the transfer.";
+        this.showMessage = false;
+      }
     },
-    getAccounts() {
-      // Fetch user accounts
+    async getAccounts() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_ROOT_URL}/dashboard`, {
+          withCredentials: true,
+        });
+        this.accounts = response.data.accounts.map((account) => ({
+          value: account.id,
+          text: `${account.name} - ${account.account_number}`,
+        }));
+      } catch (error) {
+        console.error("Error fetching accounts:", error);
+      }
     },
   },
   created() {

@@ -1,21 +1,50 @@
 <template>
   <div class="admin-portal">
-    <h2>Admin Dashboard</h2>
+    <h2>Admin Portal</h2>
     <p>Manage users and accounts from here.</p>
     <div class="admin-links">
-      <router-link to="/admin/users" class="btn btn-outline-primary">
+      <button @click="handleAction('manage_users')" class="btn btn-outline-primary">
         Manage Users
-      </router-link>
-      <router-link to="/admin/accounts" class="btn btn-outline-secondary">
-        Manage Accounts
-      </router-link>
+      </button>
+      <button @click="logout" class="action-link">Logout</button>
+      <button @click="goBack" class="action-link">Back</button>
     </div>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "AdminPortal",
+  methods: {
+    async handleAction(action) {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_ROOT_URL}/admin`,
+          { action },
+          { withCredentials: true }
+        );
+        this.$router.push(response.data.redirect);
+      } catch (error) {
+        console.error("Action failed:", error);
+        alert("An error occurred while processing your request.");
+      }
+      },goBack() {
+          this.$router.push("/");
+      },async logout() {
+        try {
+          await axios.get(`${process.env.VUE_APP_ROOT_URL}/logout`, {
+            withCredentials: true,
+          });
+          alert("You have been logged out.");
+          this.$router.push("/");
+        } catch (error) {
+          console.error("Logout failed:", error);
+          alert("An error occurred while logging out. Please try again.");
+        }
+      }
+  },
 };
 </script>
 
@@ -38,4 +67,29 @@ h2 {
   display: flex;
   gap: 20px;
 }
-</style> 
+
+form {
+  margin: 0;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-outline-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-outline-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+</style>
