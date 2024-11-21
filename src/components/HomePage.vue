@@ -17,12 +17,6 @@
       </nav>
     </header>
 
-    <!-- Cookie Popup -->
-    <div class="cookie-popup" v-if="showCookiePopup">
-      <p>We use cookies to ensure you get the best experience on our website. <a href="/" class="cookie-link">Learn more</a>.</p>
-      <button @click="acceptCookies" class="btn btn-primary">Accept</button>
-    </div>
-
     <!-- Hero Section -->
     <div class="hero">
       <div class="hero-content">
@@ -38,14 +32,17 @@
       </div>
     </div>
 
-    <!-- Dashboard Section -->
-    <section class="dashboard">
+    <!-- Combined Section -->
+    <section class="combined-section">
       <div class="dashboard-content">
         <h2>Manage Your Accounts</h2>
         <p>Access your account details, view transaction history, and manage your finances with ease.</p>
-        <div class="dashboard-buttons">
-          <router-link to="/dashboard" class="btn btn-primary">Go to Dashboard</router-link>
-        </div>
+        <router-link to="/dashboard" class="btn btn-primary">Go to Dashboard</router-link>
+      </div>
+      <div class="transfer-content">
+        <h2>Seamless Money Transfers</h2>
+        <p>Send money to anyone, anytime, with ease. Our secure platform ensures that your transactions are safe and hassle-free.</p>
+        <router-link to="/transfer" class="btn btn-primary">Transfer Money</router-link>
       </div>
     </section>
 
@@ -53,15 +50,15 @@
     <section class="features">
       <div class="feature">
         <h3>Advanced Security</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel urna nec lacus facilisis efficitur.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
       </div>
       <div class="feature">
         <h3>24/7 Customer Support</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel urna nec lacus facilisis efficitur.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
       </div>
       <div class="feature">
         <h3>Seamless Transfers</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel urna nec lacus facilisis efficitur.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
       </div>
     </section>
 
@@ -70,7 +67,7 @@
       <h2>About IE Bank</h2>
       <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo lorem id metus hendrerit, non facilisis purus aliquet.
-        Proin eget justo sit amet lectus fermentum faucibus at sed eros.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo lorem id metus hendrerit, non facilisis purus aliquet.
+        Proin eget justo sit amet lectus fermentum faucibus at sed eros.
       </p>
     </section>
 
@@ -88,7 +85,7 @@ export default {
   name: "HomePage",
   data() {
     return {
-      showCookiePopup: true,
+      showCookiePopup: false, // Updated default state
       username: "", // Stores username when logged in
       isLoggedIn: false, // Tracks if user is logged in
     };
@@ -124,7 +121,7 @@ export default {
           withCredentials: true,
         });
         alert("You have been logged out.");
-        this.$router.push("/");
+        window.location.reload(); // Reload the page to reflect the logout
       } catch (error) {
         console.error("Logout failed:", error);
         alert("An error occurred while logging out. Please try again.");
@@ -132,10 +129,20 @@ export default {
     },
     acceptCookies() {
       this.showCookiePopup = false;
+      // Save the cookie acceptance in localStorage
+      localStorage.setItem("cookiesAccepted", "true");
+    },
+    checkCookiePopup() {
+      // Check localStorage for cookie acceptance
+      const cookiesAccepted = localStorage.getItem("cookiesAccepted");
+      if (!cookiesAccepted) {
+        this.showCookiePopup = true;
+      }
     },
   },
   created() {
     this.fetchUserStatus(); // Fetch login status on component creation
+    this.checkCookiePopup(); // Check if the cookie popup should be shown
   },
 };
 </script>
@@ -294,39 +301,51 @@ body, html {
   text-decoration: underline;
 }
 
-/* Dashboard Section */
-.dashboard {
-  background-color: #f0f2f5;
-  padding: 60px 20px;
+/* Combined Section */
+.combined-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: #f8f9fa;
+  padding: 40px;
+  margin: 40px auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-content,
+.transfer-content {
+  flex: 1;
+  margin: 0 20px;
   text-align: center;
 }
 
-.dashboard-content h2 {
-  font-size: 2rem;
+.dashboard-content h2,
+.transfer-content h2 {
+  font-size: 1.8rem;
   color: #004080;
-  margin-bottom: 10px;
 }
 
-.dashboard-content p {
-  font-size: 1.2rem;
+.dashboard-content p,
+.transfer-content p {
+  font-size: 1rem;
   color: #555;
   margin-bottom: 20px;
 }
 
-.dashboard-buttons .btn {
+.btn-primary {
+  background-color: #004080;
+  color: white;
   padding: 10px 20px;
   font-size: 1rem;
   border: none;
   border-radius: 5px;
-  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s;
 }
 
-.dashboard-buttons .btn-primary {
-  background-color: #004080;
-  color: white;
-}
-
-.dashboard-buttons .btn-primary:hover {
+.btn-primary:hover {
   background-color: #003366;
 }
 </style>

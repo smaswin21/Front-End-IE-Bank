@@ -6,7 +6,7 @@ axios.interceptors.response.use(
   (error) => {
     if (error.response) {
       if (error.response.status === 401) {
-        alert("Session expired. Please log in again.");
+        alert("Account not logged in properly. Please try again.");
         router.push("/");
       } else if (error.response.status === 403) {
         alert(error.response.data.error || "You do not have permission to access this page.");

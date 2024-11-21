@@ -14,6 +14,42 @@
           </li>
         </ul>
         <p v-else>No accounts available.</p>
+        <!-- Button to show create account form -->
+        <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
+          {{ showCreateForm ? 'Close' : 'Create New Account' }}
+        </button>
+
+        <!-- Create Account Form -->
+        <div v-if="showCreateForm" class="create-account-form">
+          <h3>Create New Account</h3>
+          <b-form @submit.prevent="createAccount">
+            <b-form-group label="Account Name:" label-for="account-name">
+              <b-form-input
+                id="account-name"
+                v-model="newAccount.name"
+                placeholder="Enter account name"
+                required
+              ></b-form-input>
+            </b-form-group>
+            <b-form-group label="Currency:" label-for="currency">
+              <b-form-input
+                id="currency"
+                v-model="newAccount.currency"
+                placeholder="Enter currency (e.g., EUR)"
+                required
+              ></b-form-input>
+            </b-form-group>
+            <b-form-group label="Country:" label-for="country">
+              <b-form-input
+                id="country"
+                v-model="newAccount.country"
+                placeholder="Enter country"
+                required
+              ></b-form-input>
+            </b-form-group>
+            <b-button type="submit" variant="success">Create Account</b-button>
+          </b-form>
+        </div>
       </div>
 
       <div class="transactions-section">
@@ -72,6 +108,12 @@ export default {
       isAdmin: false,
       accounts: [],
       transactions: [],
+      showCreateForm: false, // Toggles the account creation form
+      newAccount: {
+        name: "",
+        currency: "",
+        country: "",
+      },
       error: null,
     };
   },
@@ -83,14 +125,40 @@ export default {
           { withCredentials: true }
         );
 
-        // Set data from the JSON response
         this.username = response.data.username;
         this.isAdmin = response.data.is_admin;
         this.accounts = response.data.accounts;
-        this.transactions = response.data.transactions;
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         this.error = "An error occurred while loading the dashboard.";
+      }
+    },
+    async fetchTransactions() {
+      try {
+        const response = await axios.get(
+          `${process.env.VUE_APP_ROOT_URL}/transactions`,
+          { withCredentials: true }
+        );
+        this.transactions = response.data.transactions;
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        this.error = "An error occurred while loading transactions.";
+      }
+    },
+    async createAccount() {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_ROOT_URL}/create_account`,
+          this.newAccount,
+          { withCredentials: true }
+        );
+        alert(response.data.message);
+        this.newAccount = { name: "", currency: "", country: "" };
+        this.showCreateForm = false;
+        this.fetchDashboardData(); // Refresh accounts
+      } catch (error) {
+        console.error("Error creating account:", error);
+        alert(error.response?.data?.error || "Failed to create account.");
       }
     },
     async logout() {
@@ -115,6 +183,7 @@ export default {
   },
   created() {
     this.fetchDashboardData();
+    this.fetchTransactions(); // Fetch transactions separately
   },
 };
 </script>

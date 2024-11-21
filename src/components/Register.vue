@@ -80,7 +80,7 @@ export default {
             },
           }
         );alert("Registration successful!");
-        this.$router.push("/login");
+        this.$router.push("/");
       } catch (error) {
           this.error = error.response?.data?.error || "Registration failed. Please try again.";
       }
