@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import BootstrapVue from "bootstrap-vue";
 import store from './store';
 import "@/services/axios";
+import "@/services/appInsights";
 
 
 Vue.config.productionTip = false

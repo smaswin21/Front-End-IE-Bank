@@ -7,7 +7,9 @@
       </div>
       <nav class="nav">
         <template v-if="isLoggedIn">
-          <span class="nav-link">{{ username }}</span>
+          <router-link to="/dashboard" class="nav-link">
+            <span>{{ username }}</span>
+          </router-link>
           <button @click="logout" class="btn btn-danger">Logout</button>
         </template>
         <template v-else>
@@ -80,20 +82,27 @@
 
 <script>
 import axios from "axios";
+import appInsights from "../services/appInsights";
 
 export default {
   name: "HomePage",
   data() {
     return {
-      showCookiePopup: false, // Updated default state
-      username: "", // Stores username when logged in
-      isLoggedIn: false, // Tracks if user is logged in
+      showCookiePopup: false, // Default state
+      username: "",
+      isLoggedIn: false,
     };
   },
   methods: {
+    trackCustomEvent() {
+      try {
+        appInsights.trackEvent({ name: "HomepageLoaded" });
+      } catch (error) {
+        console.error("Error tracking custom event:", error);
+      }
+    },
     async fetchUserStatus() {
       try {
-        console.log("Fetching user status...");
         const response = await fetch(`${process.env.VUE_APP_ROOT_URL}/dashboard`, {
           method: "GET",
           credentials: "include",
@@ -101,12 +110,10 @@ export default {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("User status fetched successfully:", data);
-          this.isLoggedIn = true; // User is logged in
-          this.username = data.username; // Fetch username from response
+          this.isLoggedIn = true;
+          this.username = data.username;
         } else {
-          console.log("User not logged in or session expired.");
-          this.isLoggedIn = false; // User is not logged in
+          this.isLoggedIn = false;
           this.username = "";
         }
       } catch (error) {
@@ -120,8 +127,9 @@ export default {
         await axios.get(`${process.env.VUE_APP_ROOT_URL}/logout`, {
           withCredentials: true,
         });
-        alert("You have been logged out.");
-        window.location.reload(); // Reload the page to reflect the logout
+        this.isLoggedIn = false;
+        this.username = "";
+        window.location.reload();
       } catch (error) {
         console.error("Logout failed:", error);
         alert("An error occurred while logging out. Please try again.");
@@ -129,11 +137,9 @@ export default {
     },
     acceptCookies() {
       this.showCookiePopup = false;
-      // Save the cookie acceptance in localStorage
       localStorage.setItem("cookiesAccepted", "true");
     },
     checkCookiePopup() {
-      // Check localStorage for cookie acceptance
       const cookiesAccepted = localStorage.getItem("cookiesAccepted");
       if (!cookiesAccepted) {
         this.showCookiePopup = true;
@@ -141,8 +147,11 @@ export default {
     },
   },
   created() {
-    this.fetchUserStatus(); // Fetch login status on component creation
-    this.checkCookiePopup(); // Check if the cookie popup should be shown
+    this.fetchUserStatus();
+    this.checkCookiePopup();
+  },
+  mounted() {
+    this.trackCustomEvent(); // Track page view when component mounts
   },
 };
 </script>

@@ -34,6 +34,7 @@
 
       <b-button type="submit" variant="primary" block>Transfer</b-button>
     </b-form>
+    <button @click="goBack" class="action-link">Back</button>
   </div>
 </template>
 
@@ -89,6 +90,9 @@ export default {
       } catch (error) {
         console.error("Error fetching accounts:", error);
       }
+    },
+    goBack() {
+      this.$router.go(-1);
     },
   },
   created() {

@@ -20,13 +20,13 @@
         </button>
 
         <!-- Create Account Form -->
-        <div v-if="showCreateForm" class="create-account-form">
-          <h3>Create New Account</h3>
+        <div v-if="showCreateForm">
+          <h3>Create a New Account</h3>
           <b-form @submit.prevent="createAccount">
             <b-form-group label="Account Name:" label-for="account-name">
               <b-form-input
                 id="account-name"
-                v-model="newAccount.name"
+                v-model="newAccount.account_name"
                 placeholder="Enter account name"
                 required
               ></b-form-input>
@@ -35,8 +35,16 @@
               <b-form-input
                 id="currency"
                 v-model="newAccount.currency"
-                placeholder="Enter currency (e.g., EUR)"
+                placeholder="Enter currency (e.g., EUR, USD)"
                 required
+              ></b-form-input>
+            </b-form-group>
+            <b-form-group label="Initial Balance:" label-for="initial-balance">
+              <b-form-input
+                id="initial-balance"
+                type="number"
+                v-model="newAccount.initial_balance"
+                placeholder="Enter initial balance"
               ></b-form-input>
             </b-form-group>
             <b-form-group label="Country:" label-for="country">
@@ -47,10 +55,11 @@
                 required
               ></b-form-input>
             </b-form-group>
-            <b-button type="submit" variant="success">Create Account</b-button>
+            <b-button type="submit" variant="primary">Create Account</b-button>
           </b-form>
         </div>
       </div>
+
 
       <div class="transactions-section">
         <h2>Your Transactions</h2>
@@ -95,10 +104,12 @@
       <button @click="goBack" class="action-link">Back</button>
     </div>
   </div>
+
 </template>
 
 <script>
 import axios from "axios";
+import appInsights from "../services/appInsights";
 
 export default {
   name: "Dashboard",
@@ -110,9 +121,10 @@ export default {
       transactions: [],
       showCreateForm: false, // Toggles the account creation form
       newAccount: {
-        name: "",
+        account_name: "",
         currency: "",
         country: "",
+        initial_balance: 0.0,
       },
       error: null,
     };
@@ -152,11 +164,36 @@ export default {
           this.newAccount,
           { withCredentials: true }
         );
+
+        // Track successful account creation
+        appInsights.trackEvent({
+          name: "AccountCreationSuccess",
+          properties: {
+            username: this.username,
+            accountName: this.newAccount.name,
+            currency: this.newAccount.currency,
+            initial_balance: this.newAccount.initial_balance,
+            country: this.newAccount.country,
+          },
+        });
+
         alert(response.data.message);
-        this.newAccount = { name: "", currency: "", country: "" };
+        this.newAccount = { account_name: "", currency: "", country: "" , initial_balance: 0.0};
         this.showCreateForm = false;
         this.fetchDashboardData(); // Refresh accounts
       } catch (error) {
+        // Track failed account creation
+        appInsights.trackEvent({
+          name: "AccountCreationFailure",
+          properties: {
+            username: this.username,
+            accountName: this.newAccount.name,
+            currency: this.newAccount.currency,
+            country: this.newAccount.country,
+            error: error.response?.data?.error || "Unknown error",
+          },
+        });
+
         console.error("Error creating account:", error);
         alert(error.response?.data?.error || "Failed to create account.");
       }

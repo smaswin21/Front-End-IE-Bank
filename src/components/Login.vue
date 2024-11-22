@@ -30,6 +30,7 @@
 
 <script>
 import axios from "axios";
+import appInsights from "../services/appInsights";
 
 export default {
   data() {
@@ -56,6 +57,15 @@ export default {
           }
         );
 
+        // Track successful login
+        appInsights.trackEvent({
+          name: "LoginSuccessful",
+          properties: {
+            username: this.username,
+            redirect: response.data.redirect,
+          },
+        });
+
         // Redirect based on server response
         if (response.data.redirect === "admin") {
           this.$router.push("/admin");
@@ -65,6 +75,15 @@ export default {
           this.error = "Unexpected response from the server.";
         }
       } catch (error) {
+        // Track failed login
+        appInsights.trackEvent({
+          name: "LoginFailed",
+          properties: {
+            username: this.username,
+            errorMessage: error.response?.data?.error || error.message || "Unknown error",
+          },
+        });
+
         console.error("Login Error:", error);
         this.error =
           error.response?.data?.error || "Unexpected response from the server. Please try again.";

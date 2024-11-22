@@ -21,6 +21,14 @@
             required
           ></b-form-input>
         </b-form-group>
+        <b-form-group label="Initial Balance:" label-for="initial-balance">
+          <b-form-input
+            id="initial-balance"
+            type="number"
+            v-model="initialBalance"
+            placeholder="Enter initial balance"
+          ></b-form-input>
+        </b-form-group>
         <b-form-group label="Password:" label-for="password">
           <b-form-input
             id="password"
@@ -48,6 +56,7 @@
 
 <script>
 import axios from "axios";
+import appInsights from "../services/appInsights";
 
 export default {
   data() {
@@ -56,6 +65,7 @@ export default {
       email: "",
       password: "",
       confirmPassword: "",
+      initialBalance: 0.0,
       error: null,
     };
   },
@@ -63,6 +73,14 @@ export default {
     async onSubmit() {
       if (this.password !== this.confirmPassword) {
         this.error = "Passwords do not match.";
+        // Track registration failure event
+        appInsights.trackEvent({
+          name: "RegistrationFailed",
+          properties: {
+            username: this.username,
+            reason: "Passwords do not match",
+          },
+        });
         return;
       }
       try {
@@ -73,16 +91,36 @@ export default {
             email: this.email,
             password: this.password,
             confirm_password: this.confirmPassword,
+            initial_balance: this.initialBalance,
           },
           {
             headers: {
               "Content-Type": "application/json",
             },
           }
-        );alert("Registration successful!");
+        );
+        alert("Registration successful!");
+
+        // Track successful registration event
+        appInsights.trackEvent({
+          name: "UserRegistered",
+          properties: {
+            username: this.username,
+            email: this.email,
+          },
+        });
+
         this.$router.push("/");
       } catch (error) {
-          this.error = error.response?.data?.error || "Registration failed. Please try again.";
+        this.error = error.response?.data?.error || "Registration failed. Please try again.";
+        // Track registration failure event
+        appInsights.trackEvent({
+          name: "RegistrationFailed",
+          properties: {
+            username: this.username,
+            reason: this.error,
+          },
+        });
       }
     },
   },
