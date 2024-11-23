@@ -3,9 +3,8 @@ import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 
 const appInsights = new ApplicationInsights({
     config: {
-        // instrumentationKey: String(appInsights.properties.instrumentationKey)
-        instrumentationKey: "532343d3-c1a8-4586-b58c-73517225c5ac",
-    },
+        connectionString: "InstrumentationKey=df87d74e-a9f4-40b8-80d5-9dd0a591faf4;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/;ApplicationId=4aa0857a-04b6-4f29-8e3b-61166098a9c6"
+    }
 });
 
 appInsights.loadAppInsights();
