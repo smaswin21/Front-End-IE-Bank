@@ -1,26 +1,54 @@
 <template>
   <div class="dashboard">
-    <div class="welcome">
-      <h1>Welcome, {{ username }}</h1>
-    </div>
+    <!-- Top Header -->
+    <header class="header">
+      <div class="logo">
+        <router-link to="/" class="logo-link">
+          <h2>IE Bank</h2>
+        </router-link>
+      </div>
+      <nav class="nav">
+        <template v-if="isLoggedIn">
+          <router-link to="/dashboard" class="nav-link">
+            <span>{{ username }}</span>
+          </router-link>
+          <button @click="logout" class="btn btn-danger">Logout</button>
+        </template>
+        <template v-else>
+          <router-link to="/login" class="nav-link">Login</router-link>
+          <router-link to="/register" class="nav-link">Register</router-link>
+        </template>
+      </nav>
+    </header>
 
     <div v-if="!isAdmin">
       <div class="accounts-section">
         <h2>Your Accounts</h2>
-        <ul v-if="accounts.length">
-          <li v-for="account in accounts" :key="account.id">
-            <strong>{{ account.name }}</strong> - {{ account.account_number }} |
-            Balance: {{ account.balance }} {{ account.currency }}
-          </li>
-        </ul>
-        <p v-else>No accounts available.</p>
-        <!-- Button to show create account form -->
-        <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
-          {{ showCreateForm ? 'Close' : 'Create New Account' }}
-        </button>
+        <div class="accounts-wrapper">
+          <!-- Accounts List -->
+          <div class="accounts-list">
+            <ul v-if="accounts.length">
+              <li v-for="account in accounts" :key="account.id">
+                <strong>{{ account.account_name }}</strong> {{ account.account_number }} |
+                Balance: {{ account.balance }} {{ account.currency }}
+              </li>
+            </ul>
+            <p v-else>No accounts available.</p>
+          </div>
 
-        <!-- Create Account Form -->
-        <div v-if="showCreateForm">
+          <!-- Action Buttons -->
+          <div class="accounts-actions">
+            <button class="btn btn-primary" @click="showCreateForm = true">
+              Create New Account
+            </button>
+            <router-link to="/transfer" class="btn btn-primary">Transfer Money</router-link>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for Create Account -->
+      <div v-if="showCreateForm" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-content">
           <h3>Create a New Account</h3>
           <b-form @submit.prevent="createAccount">
             <b-form-group label="Account Name:" label-for="account-name">
@@ -55,11 +83,15 @@
                 required
               ></b-form-input>
             </b-form-group>
-            <b-button type="submit" variant="primary">Create Account</b-button>
+            <div class="modal-actions">
+              <b-button type="submit" variant="primary">Create Account</b-button>
+              <b-button type="button" variant="secondary" @click="closeModal">
+                Cancel
+              </b-button>
+            </div>
           </b-form>
         </div>
       </div>
-
 
       <div class="transactions-section">
         <h2>Your Transactions</h2>
@@ -91,20 +123,14 @@
       </div>
 
       <div class="actions">
-        <router-link to="/transfer" class="action-link">Transfer Money</router-link>
-        <button @click="logout" class="action-link">Logout</button>
         <button @click="goBack" class="action-link">Back</button>
       </div>
     </div>
-
     <div v-else>
-      <p>You are an admin. Use the admin portal to manage users and accounts.</p>
+      <p style="padding:20px;">You are an admin. Use the admin portal to manage users and accounts.</p>
       <router-link to="/admin" class="action-link">Go to Admin Portal</router-link>
-      <button @click="logout" class="action-link">Logout</button>
-      <button @click="goBack" class="action-link">Back</button>
     </div>
   </div>
-
 </template>
 
 <script>
@@ -117,6 +143,7 @@ export default {
     return {
       username: "",
       isAdmin: false,
+      isLoggedIn: false, // Added logic to toggle login/register
       accounts: [],
       transactions: [],
       showCreateForm: false, // Toggles the account creation form
@@ -140,9 +167,10 @@ export default {
         this.username = response.data.username;
         this.isAdmin = response.data.is_admin;
         this.accounts = response.data.accounts;
+        this.isLoggedIn = true;
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
-        this.error = "An error occurred while loading the dashboard.";
+        this.error = "An error occurred while loading dashboard data.";
       }
     },
     async fetchTransactions() {
@@ -165,38 +193,22 @@ export default {
           { withCredentials: true }
         );
 
-        // Track successful account creation
-        appInsights.trackEvent({
-          name: "AccountCreationSuccess",
-          properties: {
-            username: this.username,
-            accountName: this.newAccount.name,
-            currency: this.newAccount.currency,
-            initial_balance: this.newAccount.initial_balance,
-            country: this.newAccount.country,
-          },
-        });
-
         alert(response.data.message);
-        this.newAccount = { account_name: "", currency: "", country: "" , initial_balance: 0.0};
+        this.newAccount = {
+          account_name: "",
+          currency: "",
+          country: "",
+          initial_balance: 0.0,
+        };
         this.showCreateForm = false;
-        this.fetchDashboardData(); // Refresh accounts
+        this.fetchDashboardData();
       } catch (error) {
-        // Track failed account creation
-        appInsights.trackEvent({
-          name: "AccountCreationFailure",
-          properties: {
-            username: this.username,
-            accountName: this.newAccount.name,
-            currency: this.newAccount.currency,
-            country: this.newAccount.country,
-            error: error.response?.data?.error || "Unknown error",
-          },
-        });
-
         console.error("Error creating account:", error);
         alert(error.response?.data?.error || "Failed to create account.");
       }
+    },
+    closeModal() {
+      this.showCreateForm = false;
     },
     async logout() {
       try {
@@ -204,6 +216,8 @@ export default {
           withCredentials: true,
         });
         alert("You have been logged out.");
+        this.isLoggedIn = false; // Update login state
+        this.username = ""; // Clear username
         this.$router.push("/");
       } catch (error) {
         console.error("Logout failed:", error);
@@ -227,34 +241,108 @@ export default {
 
 <style scoped>
 .dashboard {
-  padding: 20px;
   background: #f8f9fa;
   min-height: 100vh;
   font-family: Arial, sans-serif;
 }
 
-.welcome h1 {
-  text-align: center;
-  color: #343a40;
-  margin-bottom: 30px;
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #004080;
+  color: white;
 }
 
-.accounts-section,
+.logo h2 {
+  margin: 0;
+}
+
+.logo-link {
+  text-decoration: none;
+  color: white;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  color: white;
+  font-weight: bold;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+/* Accounts Section */
+.accounts-section {
+  padding: 20px 40px;
+}
+
+.accounts-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.accounts-list {
+  flex: 3;
+}
+
+.accounts-actions {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 10px;
+  padding: 20px 30px;
+  width: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Transactions Section */
 .transactions-section {
+  padding: 20px 40px;
   margin-bottom: 30px;
-}
-
-.accounts-section ul {
-  list-style: none;
-  padding: 0;
-}
-
-.accounts-section li {
-  background: #ffffff;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .transactions-section table {
@@ -279,23 +367,8 @@ export default {
   background: #ffffff;
 }
 
+/* Actions */
 .actions {
   text-align: center;
-  margin-top: 20px;
-}
-
-.action-link {
-  margin: 0 10px;
-  padding: 10px 20px;
-  background: #007bff;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-  cursor: pointer;
-  display: inline-block;
-}
-
-.action-link:hover {
-  background: #0056b3;
 }
 </style>

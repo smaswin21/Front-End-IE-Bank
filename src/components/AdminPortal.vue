@@ -1,13 +1,34 @@
 <template>
-  <div class="admin-portal">
-    <h2>Admin Portal</h2>
-    <p>Manage users and accounts from here.</p>
-    <div class="admin-links">
-      <button @click="handleAction('manage_users')" class="btn btn-outline-primary">
-        Manage Users
-      </button>
-      <button @click="logout" class="action-link">Logout</button>
-      <button @click="goBack" class="action-link">Back</button>
+  <div class="admin-portal-page">
+    <div class="form-container">
+      <h2>Admin Portal</h2>
+      <p>Manage users and accounts from here.</p>
+      <div class="admin-links">
+        <b-button
+          @click="handleAction('manage_users')"
+          variant="primary"
+          block
+          class="admin-button"
+        >
+          Manage Users
+        </b-button>
+        <b-button
+          @click="logout"
+          variant="outline-danger"
+          block
+          class="admin-button"
+        >
+          Logout
+        </b-button>
+        <b-button
+          @click="goBack"
+          variant="outline-secondary"
+          block
+          class="admin-button"
+        >
+          Back
+        </b-button>
+      </div>
     </div>
   </div>
 </template>
@@ -30,32 +51,42 @@ export default {
         console.error("Action failed:", error);
         alert("An error occurred while processing your request.");
       }
-      },goBack() {
-          this.$router.push("/");
-      },async logout() {
-        try {
-          await axios.get(`${process.env.VUE_APP_ROOT_URL}/logout`, {
-            withCredentials: true,
-          });
-          alert("You have been logged out.");
-          this.$router.push("/");
-        } catch (error) {
-          console.error("Logout failed:", error);
-          alert("An error occurred while logging out. Please try again.");
-        }
+    },
+    async logout() {
+      try {
+        await axios.get(`${process.env.VUE_APP_ROOT_URL}/logout`, {
+          withCredentials: true,
+        });
+        alert("You have been logged out.");
+        this.$router.push("/");
+      } catch (error) {
+        console.error("Logout failed:", error);
+        alert("An error occurred while logging out. Please try again.");
       }
+    },
+    goBack() {
+      this.$router.go(-1); // Navigate back to the previous page
+    },
   },
 };
 </script>
 
 <style scoped>
-.admin-portal {
+.admin-portal-page {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 40px;
-  background: #f0f4f7;
   height: 100vh;
+  background: #f8f9fa; /* Consistent background */
+}
+
+.form-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
@@ -63,33 +94,20 @@ h2 {
   margin-bottom: 20px;
 }
 
+p {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #6c757d;
+}
+
 .admin-links {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-form {
-  margin: 0;
-}
-
-button {
+.admin-button {
+  font-size: 16px;
   padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-outline-primary {
-  background: #007bff;
-  color: white;
-}
-
-.btn-outline-secondary {
-  background: #6c757d;
-  color: white;
-}
-
-button:hover {
-  opacity: 0.9;
 }
 </style>
