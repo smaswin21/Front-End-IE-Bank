@@ -8,8 +8,8 @@ on:
 
 env:
 
-  FRONTEND_WEBAPP_DEV: aswin-fe-dev
-  FRONTEND_WEBAPP_UAT: aswin-fe-uat  # Added UAT frontend web app
+  FRONTEND_WEBAPP_DEV: money404-appInsights-dev
+  FRONTEND_WEBAPP_UAT: money404-appInsights-uat
   SUBSCRIPTION_ID_DEV: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
   USER_ALIAS: aswin
 
