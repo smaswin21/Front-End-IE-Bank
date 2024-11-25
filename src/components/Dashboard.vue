@@ -29,7 +29,7 @@
           <div class="accounts-list">
             <ul v-if="accounts.length">
               <li v-for="account in accounts" :key="account.id">
-                <strong>{{ account.account_name }}</strong> {{ account.account_number }} |
+                <strong>{{ account.name }} | </strong> {{ account.account_number }} |
                 Balance: {{ account.balance }} {{ account.currency }}
               </li>
             </ul>
@@ -135,7 +135,6 @@
 
 <script>
 import axios from "axios";
-import appInsights from "../services/appInsights";
 
 export default {
   name: "Dashboard",

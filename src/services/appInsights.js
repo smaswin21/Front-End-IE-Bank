@@ -3,12 +3,13 @@ import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 
 const appInsights = new ApplicationInsights({
     config: {
-        connectionString: "InstrumentationKey=df87d74e-a9f4-40b8-80d5-9dd0a591faf4;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/;ApplicationId=4aa0857a-04b6-4f29-8e3b-61166098a9c6"
+        connectionString: "InstrumentationKey=e1394d7d-16bb-4c70-bddd-dca689929a7c;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/;ApplicationId=23dad76f-6322-44a5-b645-e8bf0ae62af2"
     }
 });
 
 appInsights.loadAppInsights();
 appInsights.trackPageView();
+
 
 export default appInsights;
 
