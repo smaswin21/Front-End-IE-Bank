@@ -46,7 +46,6 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-
       - name: Download artifact from build-dev job
         uses: actions/download-artifact@v4
         with:
@@ -55,6 +54,15 @@ jobs:
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Retrieve Application Insights Secrets
+        id: fetch-appinsights-secrets
+        run: |
+          INSTRUMENTATION_KEY=$(az keyvault secret show --vault-name money404-kv-dev --name instrumentationKey --query value -o tsv)
+          CONNECTION_STRING=$(az keyvault secret show --vault-name money404-kv-dev --name connectionString --query value -o tsv)
+          echo "VUE_APP_APPINSIGHTS_INSTRUMENTATION_KEY=$INSTRUMENTATION_KEY" >> $GITHUB_ENV
+          echo "VUE_APP_APPINSIGHTS_CONNECTION_STRING=$CONNECTION_STRING" >> $GITHUB_ENV
+
 
       - name: 'Deploy to Azure Web App - Development'
         id: deploy-to-webapp
