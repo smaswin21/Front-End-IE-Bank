@@ -57,7 +57,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: 'Deploy to Azure Web App - Development'
-        id: deploy-to-webapp
+        id: deploy-to-staticwebapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.FRONTEND_WEBAPP_DEV }}
