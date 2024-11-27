@@ -12,8 +12,8 @@ env:
   FRONTEND_WEBAPP_UAT: money404-fe-uat  # Added UAT frontend web app
   SUBSCRIPTION_ID_DEV: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
   USER_ALIAS: money404
-  APP_LOCATION: "../../" # location of your client code
-  API_LOCATION: "api" # location of your api source code - optional
+  APP_LOCATION: "" # location of your client code
+  API_LOCATION: "" # location of your api source code - optional
   OUTPUT_LOCATION: "dist-dev" # location of client code build output
   AZURE_STATIC_WEB_APPS_API_TOKEN: 627a5782f5e9d8d7e9796d8d57fb30aa1e02d4f196840be9c2c004c684ec5e3205-c12021e8-6451-4ff9-a04d-197dd62a62a300327170c31aaa03
 
@@ -64,9 +64,7 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ env.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "upload"
-          app_location: ${{ env.APP_LOCATION }}
-          api_location: ${{ env.API_LOCATION }}
-          output_location: ${{ env.OUTPUT_LOCATION }}
+          app_location: ${{ env.OUTPUT_LOCATION }}
 
 
   build-uat:
