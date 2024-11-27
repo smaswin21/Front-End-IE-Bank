@@ -8,8 +8,8 @@ on:
 
 env:
 
-  FRONTEND_WEBAPP_DEV: money404-fe-dev
-  FRONTEND_WEBAPP_UAT: money404-fe-uat  # Added UAT frontend web app
+  FRONTEND_WEBAPP_DEV: money404-dev  # Azure Static Web App Name
+  FRONTEND_WEBAPP_UAT: money404-uat  # Added UAT frontend web app
   SUBSCRIPTION_ID_DEV: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
   USER_ALIAS: money404
 
@@ -58,10 +58,12 @@ jobs:
 
       - name: 'Deploy to Azure Web App - Development'
         id: deploy-to-staticwebapp
-        uses: azure/webapps-deploy@v3
+        uses: Azure/static-web-apps-deploy@v1
         with:
-          app-name: ${{ env.FRONTEND_WEBAPP_DEV }}
-          package: .
+          app_location: "/" # Root folder of your app
+          output_location: "dist-dev" # Output directory of the Vue build
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEV }}
+          #package: .
 
   build-uat:
     if: github.event.pull_request.base.ref == 'main' || github.event_name == 'workflow_dispatch'
