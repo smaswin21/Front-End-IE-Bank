@@ -60,6 +60,8 @@ jobs:
         run: |
           INSTRUMENTATION_KEY=$(az keyvault secret show --vault-name money404-kv-dev --name instrumentationKey --query value -o tsv)
           CONNECTION_STRING=$(az keyvault secret show --vault-name money404-kv-dev --name connectionString --query value -o tsv)
+          echo "Instrumentation Key: $INSTRUMENTATION_KEY" # Debugging
+          echo "Connection String: $CONNECTION_STRING"      # Debugging
           echo "VUE_APP_APPINSIGHTS_INSTRUMENTATION_KEY=$INSTRUMENTATION_KEY" >> $GITHUB_ENV
           echo "VUE_APP_APPINSIGHTS_CONNECTION_STRING=$CONNECTION_STRING" >> $GITHUB_ENV
 
