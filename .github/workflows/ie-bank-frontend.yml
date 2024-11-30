@@ -9,11 +9,17 @@ on:
 env:
   # Common configurations
   FRONTEND_WEBAPP_DEV: money404-fe-dev
-  FRONTEND_WEBAPP_UAT: money404-fe-uat  # Added UAT frontend web app
-  SUBSCRIPTION_ID_DEV: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
+  FRONTEND_WEBAPP_UAT: money404-fe-uat
+  FRONTEND_WEBAPP_PROD: money404-fe-prod
+  SUBSCRIPTION_ID: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
   USER_ALIAS: money404
+  # move the tokens to env/secreets/key vault:
+    #AZURE_STATIC_WEB_APPS_API_TOKEN_DEV: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEV }}
+    #AZURE_STATIC_WEB_APPS_API_TOKEN_UAT: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_UAT }}
+    #AZURE_STATIC_WEB_APPS_API_TOKEN_PROD: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROD }}
   AZURE_STATIC_WEB_APPS_API_TOKEN_DEV: 62bc299b118daad169f4c93b117244357b39f6cbfc63d347c3dc7d1f577e562605-4a3d6423-db9a-4a36-94c3-0bdbae1c686800327260d79ff503
   AZURE_STATIC_WEB_APPS_API_TOKEN_UAT: 8068ac9967c2a1e1e5bd4cd98202b1b1ae5445e10bae3d9fcb98a5299b6556fb05-af8f056b-2acb-40dd-bb52-8202e170388800320080fb1fc203
+  AZURE_STATIC_WEB_APPS_API_TOKEN_PROD: need-to-be-setted-once-deployed
 
 permissions:
   issues: write
@@ -56,6 +62,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app-dev
+
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy to Azure Static Web App (Development)
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -107,4 +117,50 @@ jobs:
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
         with:
           azure_static_web_apps_api_token: ${{ env.AZURE_STATIC_WEB_APPS_API_TOKEN_UAT }}
+          action: "upload"
+
+  build-prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'   # Set Node.js version explicitly
+
+      - name: npm install, build, and test (Production)
+        run: |
+          npm install
+          npm run build:prod  ## This command will build the Vue.js app using .env.production variables
+
+      - name: Upload artifact for deployment job (Production)
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app-prod
+          path: dist/
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: build-prod
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact from build-dev job
+        uses: actions/download-artifact@v4
+        with:
+          name: node-app-prod
+
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Static Web App (Production)
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          azure_static_web_apps_api_token: ${{ env.AZURE_STATIC_WEB_APPS_API_TOKEN_PROD }}
           action: "upload"
