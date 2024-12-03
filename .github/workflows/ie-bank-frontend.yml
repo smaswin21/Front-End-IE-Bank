@@ -7,10 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  # Common configurations
   SUBSCRIPTION_ID: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
-  SWA_NAME: money404-swa-dev
-  # move the tokens to env/secreets/key vault: az staticwebapp secrets list --name money404-swa-dev --resource-group BCSAI2024-DEVOPS-STUDENTS-B-DEV --query "properties.apiKey" -o tsv
   DEV_RESOURCE_GROUP: BCSAI2024-DEVOPS-STUDENTS-B-DEV
   UAT_RESOURCE_GROUP: BCSAI2024-DEVOPS-STUDENTS-B-UAT
   PROD_RESOURCE_GROUP: BCSAI2024-DEVOPS-STUDENTS-B-PROD
@@ -71,7 +68,7 @@ jobs:
         env:
           SUBSCRIPTION_ID: ${{ env.SUBSCRIPTION_ID }}
           SWA_NAME: money404-swa-dev
-          DEV_RESOURCE_GROUP: BCSAI2024-DEVOPS-STUDENTS-B-DEV
+          DEV_RESOURCE_GROUP: ${{ env.DEV_RESOURCE_GROUP }}
 
 
       - name: Deploy to Azure Static Web App (Development)
@@ -120,6 +117,16 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Retrieve Azure Static Web App API Token (UAT)
+        run: |
+          TOKEN=$(az staticwebapp secrets list --name $SWA_NAME --resource-group $UAT_RESOURCE_GROUP --query "properties.apiKey" -o tsv)
+          echo "AZURE_STATIC_WEB_APPS_API_TOKEN_UAT=$TOKEN" >> $GITHUB_ENV
+        shell: bash
+        env:
+          SUBSCRIPTION_ID: ${{ env.SUBSCRIPTION_ID }}
+          SWA_NAME: money404-swa-uat
+          DEV_RESOURCE_GROUP: ${{ env.UAT_RESOURCE_GROUP }}
+
       - name: Deploy to Azure Static Web App (UAT)
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
         with:
@@ -165,6 +172,16 @@ jobs:
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Retrieve Azure Static Web App API Token (PROD)
+        run: |
+          TOKEN=$(az staticwebapp secrets list --name $SWA_NAME --resource-group $PROD_RESOURCE_GROUP --query "properties.apiKey" -o tsv)
+          echo "AZURE_STATIC_WEB_APPS_API_TOKEN_PROD=$TOKEN" >> $GITHUB_ENV
+        shell: bash
+        env:
+          SUBSCRIPTION_ID: ${{ env.SUBSCRIPTION_ID }}
+          SWA_NAME: money404-swa-prod
+          DEV_RESOURCE_GROUP: ${{ env.PROD_RESOURCE_GROUP }}
 
       - name: Deploy to Azure Static Web App (Production)
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
