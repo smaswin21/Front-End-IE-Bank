@@ -74,7 +74,7 @@ jobs:
           action: "upload"
 
   build-uat:
-    if: github.event.pull_request.base.ref == 'main' || github.event_name == 'workflow_dispatch'
+    if: github.event.pull_request.base.ref == 'main' || github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
