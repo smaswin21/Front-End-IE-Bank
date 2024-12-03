@@ -1,110 +1,360 @@
-<!-- Home Page -->
 <template>
-  <div class="home-page">
-    <!-- Home, Accounts, and Skull -->
+  <div class="homepage">
+    <!-- Top Header -->
     <header class="header">
-      <nav class="navigation">
-        <router-link to="/" class="nav-item">Home</router-link>
-        <router-link to="/accounts" class="nav-item">Accounts</router-link>
-        <router-link to="/skull" class="nav-item">Skull</router-link>
+      <div class="logo">
+        <h2>IE Bank</h2>
+      </div>
+      <nav class="nav">
+        <template v-if="isLoggedIn">
+          <router-link to="/dashboard" class="nav-link">
+            <span>{{ username }}</span>
+          </router-link>
+          <button @click="logout" class="btn btn-danger">Logout</button>
+        </template>
+        <template v-else>
+          <router-link to="/login" class="nav-link">Login</router-link>
+          <router-link to="/register" class="nav-link">Register</router-link>
+        </template>
       </nav>
     </header>
 
-    <!-- Welcome -->
-    <section class="welcome-section">
-      <h1 class="main-title">IE Home</h1>
-      <h2 class="sub-title">Welcome to the IE Bank Corporation</h2>
-      <img src="../assets/logo.png" alt="IE Bank Logo" class="bank-logo" />
-      <p class="intro-text">
-        We are here to help you manage your accounts and finances efficiently.
+    <!-- Hero Section -->
+    <div class="hero">
+      <div class="hero-content">
+        <h1>Welcome to IE Bank</h1>
+        <p>Your trusted partner for secure and efficient banking solutions.</p>
+        <div class="buttons">
+          <router-link to="/login" class="btn btn-primary">Login</router-link>
+          <router-link to="/register" class="btn btn-secondary">Register</router-link>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="../assets/colleagues_office.png" alt="Colleagues in Office" />
+      </div>
+    </div>
+
+    <!-- Combined Section -->
+    <section class="combined-section">
+      <div class="dashboard-content">
+        <h2>Manage Your Accounts</h2>
+        <p>Access your account details, view transaction history, and manage your finances with ease.</p>
+        <router-link to="/dashboard" class="btn btn-primary">Go to Dashboard</router-link>
+      </div>
+      <div class="transfer-content">
+        <h2>Seamless Money Transfers</h2>
+        <p>Send money to anyone, anytime, with ease. Our secure platform ensures that your transactions are safe and hassle-free.</p>
+        <router-link to="/transfer" class="btn btn-primary">Transfer Money</router-link>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+      <div class="feature">
+        <h3>Advanced Security</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      </div>
+      <div class="feature">
+        <h3>24/7 Customer Support</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      </div>
+      <div class="feature">
+        <h3>Seamless Transfers</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about">
+      <h2>About IE Bank</h2>
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo lorem id metus hendrerit, non facilisis purus aliquet.
+        Proin eget justo sit amet lectus fermentum faucibus at sed eros.
       </p>
     </section>
 
-    <!-- Action Section-->
-    <section class="cta-section">
-      <button @click="goToAccounts" class="btn btn-primary">View Accounts</button>
-      <router-link to="/create-account">
-        <button class="btn btn-secondary">Create New Account</button>
-      </router-link>
-    </section>
+    <!-- Footer -->
+    <footer class="footer">
+      <p>&copy; 2024 IE Bank. All rights reserved.</p>
+    </footer>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+import appInsights from "../services/appInsights";
+
 export default {
-  name: 'HomePage',
+  name: "HomePage",
+  data() {
+    return {
+      showCookiePopup: false, // Default state
+      username: "",
+      isLoggedIn: false,
+    };
+  },
   methods: {
-    goToAccounts() {
-      this.$router.push('/accounts');
-    }
-  }
-}
+    trackCustomEvent() {
+      try {
+        appInsights.trackEvent({ name: "HomepageLoaded" });
+      } catch (error) {
+        console.error("Error tracking custom event:", error);
+      }
+    },
+    async fetchUserStatus() {
+      try {
+        const response = await fetch(`${process.env.VUE_APP_ROOT_URL}/dashboard`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          this.isLoggedIn = true;
+          this.username = data.username;
+        } else {
+          this.isLoggedIn = false;
+          this.username = "";
+        }
+      } catch (error) {
+        console.error("Error fetching user status:", error);
+        this.isLoggedIn = false;
+        this.username = "";
+      }
+    },
+    async logout() {
+      try {
+        await axios.get(`${process.env.VUE_APP_ROOT_URL}/logout`, {
+          withCredentials: true,
+        });
+        this.isLoggedIn = false;
+        this.username = "";
+        window.location.reload();
+      } catch (error) {
+        console.error("Logout failed:", error);
+        alert("An error occurred while logging out. Please try again.");
+      }
+    },
+    acceptCookies() {
+      this.showCookiePopup = false;
+      localStorage.setItem("cookiesAccepted", "true");
+    },
+    checkCookiePopup() {
+      const cookiesAccepted = localStorage.getItem("cookiesAccepted");
+      if (!cookiesAccepted) {
+        this.showCookiePopup = true;
+      }
+    },
+  },
+  created() {
+    this.fetchUserStatus();
+    this.checkCookiePopup();
+  },
+  mounted() {
+    this.trackCustomEvent(); // Track page view when component mounts
+  },
+};
 </script>
 
-<!-- Scoped CSS for the Home Page -->
 <style scoped>
-.home-page {
-  text-align: center;
-  font-family: 'Arial', sans-serif;
+/* General Reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
 }
 
+/* Header */
 .header {
-  background-color: #283593;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #004080;
+  color: white;
+}
+
+.logo h2 {
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+/* Hero Section */
+.hero {
+  display: flex;
+  align-items: center;
+  padding: 40px;
+  background-color: #fff;
+}
+
+.hero-content {
+  flex: 1;
+  padding-right: 20px;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  color: #004080;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.hero-image {
+  text-align: center; 
   padding: 20px;
 }
 
-.navigation {
-  display: flex;
-  justify-content: center;
-}
-
-.nav-item {
-  padding: 15px;
-  color: white;
-  text-decoration: none;
-  font-size: 18px;
-}
-
-.nav-item:hover {
-  background-color: #5c6bc0;
-  color: white;
-}
-
-.welcome-section {
-  margin-top: 50px;
-}
-
-.main-title {
-  font-size: 48px;
-  margin-bottom: 10px;
-  color: #283593;
-}
-
-.sub-title {
-  font-size: 28px;
-  color: #5c6bc0;
-}
-
-.bank-logo {
-  margin: 30px auto;
+.hero-image img {
+  max-width: 100%;
+  max-height: 450px;
   display: block;
-  width: 350px;
-  height: auto;
+  margin: 0 auto; 
 }
 
-.intro-text {
-  font-size: 18px;
-  margin: 20px auto;
-  max-width: 600px;
-}
 
-.cta-section {
-  margin-top: 40px;
-}
-
-.btn {
-  font-size: 18px;
+/* Buttons */
+.buttons .btn {
   padding: 10px 20px;
-  margin: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.btn-primary {
+  background-color: #004080;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #fff;
+  color: #004080;
+  border: 2px solid #004080;
+}
+
+/* Features Section */
+.features {
+  display: flex;
+  justify-content: space-around;
+  background-color: #fff;
+  padding: 80px 60px;
+}
+
+.feature h3 {
+  color: #004080;
+  margin-bottom: 10px;
+}
+
+/* About Section */
+.about {
+  padding: 40px;
+  text-align: center;
+}
+
+.about h2 {
+  font-size: 2rem;
+  color: #004080;
+}
+
+.about p {
+  padding-left: 300px;
+  padding-right: 300px;
+  margin-bottom: 20px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #004080;
+  color: white;
+}
+
+/* Cookie Popup */
+.cookie-popup {
+  position: fixed;
+  bottom: 30px;
+  left: 400px;
+  background: #fff;
+  padding: 40px;
+  box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+
+.cookie-popup p {
+  margin: 0 0 10px 0;
+}
+
+.cookie-link {
+  color: #004080;
+  text-decoration: underline;
+}
+
+/* Combined Section */
+.combined-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: #f8f9fa;
+  padding: 40px;
+  margin: 40px auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-content,
+.transfer-content {
+  flex: 1;
+  margin: 0 20px;
+  text-align: center;
+}
+
+.dashboard-content h2,
+.transfer-content h2 {
+  font-size: 1.8rem;
+  color: #004080;
+}
+
+.dashboard-content p,
+.transfer-content p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.btn-primary {
+  background-color: #004080;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #003366;
 }
 </style>

@@ -4,6 +4,9 @@ import router from './router'
 //install bootstrap first
 import 'bootstrap/dist/css/bootstrap.css'
 import BootstrapVue from "bootstrap-vue";
+import store from './store';
+import "@/services/axios";
+import "@/services/appInsights";
 
 
 Vue.config.productionTip = false
@@ -12,5 +15,6 @@ Vue.use(BootstrapVue);
 
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')
