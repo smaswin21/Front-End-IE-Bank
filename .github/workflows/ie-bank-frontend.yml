@@ -9,14 +9,13 @@ on:
 env:
   # Common configurations
   SUBSCRIPTION_ID: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
-  USER_ALIAS: money404
-  # move the tokens to env/secreets/key vault:
-    #AZURE_STATIC_WEB_APPS_API_TOKEN_DEV: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEV }}
-    #AZURE_STATIC_WEB_APPS_API_TOKEN_UAT: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_UAT }}
-    #AZURE_STATIC_WEB_APPS_API_TOKEN_PROD: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROD }}
-  AZURE_STATIC_WEB_APPS_API_TOKEN_DEV: 475033ef00b499dde440a9de18125040e6609929515b31610f395ea4f82e75c604-8afc95e4-ce18-4c16-b9c5-bb744492268100304050488a8803
-  AZURE_STATIC_WEB_APPS_API_TOKEN_UAT: d861c15ca2adbc0ee3c89d934e451ec20184e7afaa182359f761479155ba86c204-55619668-c08a-465a-9896-38f38e110f5300310230339a5103
-  AZURE_STATIC_WEB_APPS_API_TOKEN_PROD: need-to-be-setted-once-deployed
+  SWA_NAME: money404-swa-dev
+  # move the tokens to env/secreets/key vault: az staticwebapp secrets list --name money404-swa-dev --resource-group BCSAI2024-DEVOPS-STUDENTS-B-DEV --query "properties.apiKey" -o tsv
+  DEV_RESOURCE_GROUP: BCSAI2024-DEVOPS-STUDENTS-B-DEV
+  UAT_RESOURCE_GROUP: BCSAI2024-DEVOPS-STUDENTS-B-UAT
+  PROD_RESOURCE_GROUP: BCSAI2024-DEVOPS-STUDENTS-B-PROD
+
+  
 
 permissions:
   issues: write
@@ -63,6 +62,12 @@ jobs:
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Retrieve Azure Static Web App API Token (Development)
+        id: get-token
+        run: |
+          TOKEN=$(az staticwebapp secrets list --name ${} --resource-group ${DEV_RESOURCE_GROUP} --query "properties.apiKey" -o tsv)
+          echo "AZURE_STATIC_WEB_APPS_API_TOKEN_DEV=${TOKEN}" >> $GITHUB_ENV
 
       - name: Deploy to Azure Static Web App (Development)
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
