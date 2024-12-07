@@ -1,5 +1,8 @@
 name: OSSF Scorecard Automation
 
+permissions:
+  contents: read # Default to read-only permissions
+
 on:
   push:
     branches:
@@ -11,6 +14,9 @@ on:
 jobs:
   scorecard:
     runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write # Grant write permissions for specific needs
 
     steps:
       - name: Checkout repository
