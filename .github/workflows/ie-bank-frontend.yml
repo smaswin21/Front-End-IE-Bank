@@ -30,11 +30,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'   # Set Node.js version explicitly
+      
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Retrieve Application Insights Secrets
+        id: fetch-appinsights-secrets
+        run: |
+          INSTRUMENTATION_KEY=$(az keyvault secret show --vault-name money404-kv-dev --name instrumentationKey --query value -o tsv)
+          CONNECTION_STRING=$(az keyvault secret show --vault-name money404-kv-dev --name connectionString --query value -o tsv)
+          echo "VUE_APP_APPINSIGHTS_INSTRUMENTATION_KEY=$INSTRUMENTATION_KEY" >> $GITHUB_ENV
+          echo "VUE_APP_APPINSIGHTS_CONNECTION_STRING=$CONNECTION_STRING" >> $GITHUB_ENV
 
       - name: npm install, build, and test (Development)
         run: |
           npm install
-          npm run build:dev  ## This command will build the Vue.js app using .env.development variables
+          VUE_APP_APPINSIGHTS_CONNECTION_STRING=$VUE_APP_APPINSIGHTS_CONNECTION_STRING npm run build:dev
+        env:
+          VUE_APP_APPINSIGHTS_CONNECTION_STRING: ${{ env.VUE_APP_APPINSIGHTS_CONNECTION_STRING }}
 
       - name: Upload artifact for deployment job (Development)
         uses: actions/upload-artifact@v4
@@ -89,10 +103,24 @@ jobs:
         with:
           node-version: '20.x'   # Ensure Node.js version is consistent
 
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Retrieve Application Insights Secrets
+        id: fetch-appinsights-secrets
+        run: |
+          INSTRUMENTATION_KEY=$(az keyvault secret show --vault-name money404-kv-uat --name instrumentationKey --query value -o tsv)
+          CONNECTION_STRING=$(az keyvault secret show --vault-name money404-kv-uat --name connectionString --query value -o tsv)
+          echo "VUE_APP_APPINSIGHTS_INSTRUMENTATION_KEY=$INSTRUMENTATION_KEY" >> $GITHUB_ENV
+          echo "VUE_APP_APPINSIGHTS_CONNECTION_STRING=$CONNECTION_STRING" >> $GITHUB_ENV
+
       - name: npm install, build, and test (UAT)
         run: |
           npm install
-          npm run build:uat ## This command will build the Vue.js app using .env.uat variables
+          VUE_APP_APPINSIGHTS_CONNECTION_STRING=$VUE_APP_APPINSIGHTS_CONNECTION_STRING npm run build:uat
+        env:
+          VUE_APP_APPINSIGHTS_CONNECTION_STRING: ${{ env.VUE_APP_APPINSIGHTS_CONNECTION_STRING }}
 
       - name: Upload artifact for deployment job (UAT)
         uses: actions/upload-artifact@v4
@@ -144,11 +172,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'   # Set Node.js version explicitly
+      
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Retrieve Application Insights Secrets
+        id: fetch-appinsights-secrets
+        run: |
+          INSTRUMENTATION_KEY=$(az keyvault secret show --vault-name money404-kv-prod --name instrumentationKey --query value -o tsv)
+          CONNECTION_STRING=$(az keyvault secret show --vault-name money404-kv-prod --name connectionString --query value -o tsv)
+          echo "VUE_APP_APPINSIGHTS_INSTRUMENTATION_KEY=$INSTRUMENTATION_KEY" >> $GITHUB_ENV
+          echo "VUE_APP_APPINSIGHTS_CONNECTION_STRING=$CONNECTION_STRING" >> $GITHUB_ENV
 
       - name: npm install, build, and test (Production)
         run: |
           npm install
-          npm run build:prod  ## This command will build the Vue.js app using .env.production variables
+          VUE_APP_APPINSIGHTS_CONNECTION_STRING=$VUE_APP_APPINSIGHTS_CONNECTION_STRING npm run build:prod
+        env:
+          VUE_APP_APPINSIGHTS_CONNECTION_STRING: ${{ env.VUE_APP_APPINSIGHTS_CONNECTION_STRING }}
 
       - name: Upload artifact for deployment job (Production)
         uses: actions/upload-artifact@v4
