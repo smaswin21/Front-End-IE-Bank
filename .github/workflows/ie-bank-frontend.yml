@@ -30,6 +30,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'   # Set Node.js version explicitly
+      
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Retrieve Application Insights Secrets
         id: fetch-appinsights-secrets
@@ -99,6 +103,10 @@ jobs:
         with:
           node-version: '20.x'   # Ensure Node.js version is consistent
 
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Retrieve Application Insights Secrets
         id: fetch-appinsights-secrets
         run: |
@@ -164,6 +172,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'   # Set Node.js version explicitly
+      
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Retrieve Application Insights Secrets
         id: fetch-appinsights-secrets
